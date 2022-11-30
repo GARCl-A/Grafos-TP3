@@ -38,21 +38,28 @@ class Grafo:
         fila = [inicio]
         while fila != []:
             atual = fila.pop()
-            vizinhos = self.get_vizinhos_identificacao(atual)
+            if atual == inicio:
+                vizinhos = self.get_vizinhos_objeto(atual)
+            else:
+                vizinhos = self.get_vizinhos_objeto(atual.identificacao)
             for vizinho in vizinhos:
-                if lista_marcacao[vizinho - 1] == 0:
-                    lista_marcacao[vizinho - 1] = 1
-                    lista_pais[vizinho - 1] = atual
-                    if vizinho == fim:
+                if lista_marcacao[vizinho.identificacao - 1] == 0:
+                    lista_marcacao[vizinho.identificacao - 1] = 1
+                    lista_pais[vizinho.identificacao - 1] = atual
+                    if vizinho.identificacao == fim:
+                        lista_pais[-1] = vizinho #Adicionando a ultima aresta ao final da lista de pais
                         return lista_pais
                     fila.append(vizinho)
         raise Exception(f"Não há caminho entre {inicio} e {fim}")
 
-    def get_caminho(self, pais: List[int], inicio: int, fim: int) -> List[int]:
-        caminho = [fim]
-        atual = fim
-        while atual != inicio:
-            atual = pais[atual - 1]
+    def get_caminho(self, inicio: int, fim: int) -> List[int]:
+        pais = self.bfs(inicio, fim)
+        caminho = [pais[-1], pais[fim-1]] #Buscando a última aresta no final da lista de pais e seu pai.
+        atual = pais[fim-1]
+        while atual.identificacao != inicio:
+            atual = pais[atual.identificacao - 1]
+            if atual == inicio:
+                break
             caminho.append(atual)
         caminho.reverse()
         return caminho
