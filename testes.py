@@ -21,13 +21,13 @@ from datetime import datetime
 
 t1 = datetime.now()
 print('inicio')
-teste = Grafo('grafo_rf_2.txt')
+teste = Grafo('teste.txt')
 t2 = datetime.now()
 print('fim')
 
 t3 = datetime.now()
 print('inicio')
-print(teste.ford_fulkerson(1,3))
+print(teste.ford_fulkerson(3,4))
 print('fim')
 t4 = datetime.now()
 

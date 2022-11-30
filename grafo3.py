@@ -27,6 +27,7 @@ class Aresta:
 
     def atualizar(self, gargalo:int):
         self.fluxo += gargalo
+        print('FLUXO',self.fluxo, self.vertice1, self.vertice2)
         if self.reversa == True:
             self.capacidade_residual = self.fluxo
         else:
@@ -116,16 +117,23 @@ class Grafo:
 
     def aumentar(self, caminho: List[Aresta]) -> None:
         gargalo = self.get_gargalo(caminho)
+        gargalo_valor = gargalo.capacidade_residual
+        print('GARGALO', gargalo.capacidade_residual, gargalo.vertice1, gargalo.vertice2, gargalo.fluxo)
         for aresta in caminho:
-            aresta.atualizar(gargalo.capacidade_residual)
+            aresta.atualizar(gargalo_valor)
 
     def ford_fulkerson(self, inicio: int, fim:int, reset: bool = False) -> int:
         if reset == True:
             self.reset()
         caminho = self.get_caminho(inicio, fim)
+        iter = 0
         while caminho:
             self.aumentar(caminho)
             caminho = self.get_caminho(inicio, fim)
+            if caminho != False:
+                for i in caminho:
+                    #print(iter,i.vertice1, i.vertice2, i.capacidade_residual, i.fluxo)
+                    iter +=1
         fluxo = self.get_fluxo(inicio)
         reset = True
         return fluxo
