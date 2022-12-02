@@ -58,15 +58,8 @@ class Grafo:
     def add_aresta(self, vertice1: int, vertice2: int, capacidade:int, fluxo:int, reversa:bool) -> None:
         self.grafo[vertice1].append(Aresta(vertice1, vertice2, capacidade, fluxo, reversa))
 
-    def get_vizinhos(self, vertice: int, residual:bool):
-        vizinhos = []
-        if residual == False:
-            for vizinho in self.grafo[vertice]:
-                vizinhos.append(vizinho)
-        else:
-            for vizinho in self.grafo[vertice]:
-                if vizinho.elegivel():
-                    vizinhos.append(vizinho)
+    def get_vizinhos(self, vertice: int):
+        vizinhos = self.grafo[vertice]
         return vizinhos
 
     def bfs(self, inicio:int, fim:int) -> List[Aresta]:
@@ -81,12 +74,12 @@ class Grafo:
             atual = fila.pop()
             vizinhos = []
             if setup == 1:
-                vizinhos = self.get_vizinhos(atual, True)
+                vizinhos = self.get_vizinhos(atual)
                 setup = 0
             else:
-                vizinhos = self.get_vizinhos(atual.vertice2, True)
+                vizinhos = self.get_vizinhos(atual.vertice2)
             for vizinho in vizinhos:
-                if explorados[vizinho.vertice2] == 0:
+                if explorados[vizinho.vertice2] == 0 and vizinho.elegivel():
                     explorados[vizinho.vertice2] = 1
                     pais[vizinho.vertice2] = atual
                     if vizinho.vertice2 == fim:
@@ -133,7 +126,7 @@ class Grafo:
 
     def get_fluxo(self, vertice: int) -> int:
         fluxo = 0
-        vizinhos = self.get_vizinhos(vertice, False)
+        vizinhos = self.get_vizinhos(vertice)
         for aresta in vizinhos:
             fluxo += aresta.fluxo
         return fluxo
