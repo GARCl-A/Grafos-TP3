@@ -1,0 +1,31 @@
+Grafo 1
+Tempo médio = 0.005898737907409668 segundos
+Fluxo máximo = 282
+
+Grafo 2
+Tempo médio = 0.011900234222412109 segundos
+Fluxo máximo = 276820
+
+Grafo 3
+Tempo médio = 0.03409905433654785 segundos
+Fluxo máximo = 291
+
+Grafo 4
+Tempo médio = 0.04949936866760254 segundos
+Fluxo máximo = 251336
+
+Grafo 5
+Tempo médio = 0.6092984676361084 segundos
+Fluxo máximo = 618
+
+Grafo 6
+Tempo médio = 2.5295979022979735 segundos
+Fluxo máximo = 543234
+
+Grafo 7
+Tempo médio = 3.454824662208557 segundos
+Fluxo máximo = 611
+
+Grafo 8
+Tempo médio = 29.407711362838747 segundos
+Fluxo máximo = 5382665

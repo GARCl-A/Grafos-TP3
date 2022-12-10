@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import *
 import numpy as np
 import time
+from math import ceil
 
 class Aresta:
     def __init__(self, vertice1: int, vertice2:int, capacidade:int, fluxo:int, reversa:bool) -> None:
@@ -33,27 +34,37 @@ class Aresta:
         else:
             self.capacidade_residual = self.capacidade - self.fluxo
     
-    def elegivel(self):
-        if self.capacidade_residual == 0:
-            return False
-        else:
+    def elegivel(self, delta: int) -> bool:
+        if self.capacidade_residual >= delta:
             return True
+        else:
+            return False
 
 class Grafo:
-    def __init__(self, dados:str) -> None:
+    def __init__(self, dados:str, direcionado: bool = True) -> None:
         self.dados = dados
 
         self.grafo = defaultdict(list) 
         arquivo = open(self.dados, 'r')
         self.tamanho = int(arquivo.readline())
-
-        for linha in arquivo:   #Criando grafo residual
-            split = linha.split()
-            vertice1 = int(split[0])
-            vertice2 = int(split[1])
-            capacidade = int(split[2])
-            self.add_aresta(vertice1, vertice2, capacidade, 0, False)
-            self.add_aresta(vertice2, vertice1, capacidade, 0, True)
+        if direcionado == True:
+            for linha in arquivo:   #Criando grafo residual
+                split = linha.split()
+                vertice1 = int(split[0])
+                vertice2 = int(split[1])
+                capacidade = int(split[2])
+                self.add_aresta(vertice1, vertice2, capacidade, 0, False)
+                self.add_aresta(vertice2, vertice1, capacidade, 0, True)
+        if direcionado == False:
+            for linha in arquivo:   #Criando grafo residual
+                split = linha.split()
+                vertice1 = int(split[0])
+                vertice2 = int(split[1])
+                capacidade = int(split[2])
+                self.add_aresta(vertice1, vertice2, capacidade, 0, False)
+                self.add_aresta(vertice2, vertice1, capacidade, 0, True)
+                self.add_aresta(vertice1, vertice2, capacidade, 0, True)
+                self.add_aresta(vertice2, vertice1, capacidade, 0, False)
         arquivo.close
 
     def add_aresta(self, vertice1: int, vertice2: int, capacidade:int, fluxo:int, reversa:bool) -> None:
@@ -63,7 +74,7 @@ class Grafo:
         vizinhos = self.grafo[vertice]
         return vizinhos
 
-    def bfs(self, inicio:int, fim:int) -> List[Aresta]:
+    def bfs(self, inicio: int, fim: int, delta: int) -> List[Aresta]:
         setup = 1
         explorados = [0] * (self.tamanho + 1) #O Zero não será utilizado
         pais = [0] * (self.tamanho + 1) #O Zero não será utilizado
@@ -80,7 +91,7 @@ class Grafo:
             else:
                 vizinhos = self.get_vizinhos(atual.vertice2)
             for vizinho in vizinhos:
-                if explorados[vizinho.vertice2] == 0 and vizinho.elegivel():
+                if explorados[vizinho.vertice2] == 0 and vizinho.elegivel(delta):
                     explorados[vizinho.vertice2] = 1
                     pais[vizinho.vertice2] = atual
                     if vizinho.vertice2 == fim:
@@ -89,8 +100,8 @@ class Grafo:
                     fila.append(vizinho)
         return False
 
-    def get_caminho(self, inicio: int, fim: int) -> List[int]:
-        pais = self.bfs(inicio, fim)
+    def get_caminho(self, inicio: int, fim: int, delta: int = 1) -> List[Aresta]:
+        pais = self.bfs(inicio, fim, delta)
         if pais:
             caminho = [pais[-1]]
             atual = pais[fim]
@@ -114,13 +125,30 @@ class Grafo:
         for aresta in caminho:
             aresta.atualizar(gargalo_valor)
 
-    def ford_fulkerson(self, inicio: int, fim:int, escrita: str, reset: bool = False) -> int:
+    def ford_fulkerson(self, inicio: int, fim:int, escrita: str, delta: bool = False, reset: bool = False) -> int:
         if reset == True:
             self.reset()
-        caminho = self.get_caminho(inicio, fim)
-        while caminho:
-            self.aumentar(caminho)
+
+        if delta == False:
             caminho = self.get_caminho(inicio, fim)
+            while caminho:
+                self.aumentar(caminho)
+                caminho = self.get_caminho(inicio, fim)
+
+        if delta == True:
+            capacidade = self.get_capacidade(inicio)
+            delta = ceil(capacidade/2)
+            while delta != 1:     
+                caminho = self.get_caminho(inicio, fim, delta)
+                while caminho:
+                    self.aumentar(caminho)
+                    caminho = self.get_caminho(inicio, fim, delta)
+                delta = ceil(delta/2)
+            caminho = self.get_caminho(inicio, fim)
+            while caminho:
+                self.aumentar(caminho)
+                caminho = self.get_caminho(inicio, fim)
+
         fluxo = self.get_fluxo(inicio)
         tempo_leitura = self.alocacao(escrita)
         reset = True
@@ -132,6 +160,13 @@ class Grafo:
         for aresta in vizinhos:
             fluxo += aresta.fluxo
         return fluxo
+
+    def get_capacidade(self, vertice: int) -> int:
+        capacidade = 0
+        vizinhos = self.get_vizinhos(vertice)
+        for aresta in vizinhos:
+            capacidade += aresta.capacidade
+        return capacidade
 
     def reset(self):
         self.grafo = defaultdict(list) 
