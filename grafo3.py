@@ -1,6 +1,7 @@
 from collections import defaultdict
 from typing import *
 import numpy as np
+import time
 
 class Aresta:
     def __init__(self, vertice1: int, vertice2:int, capacidade:int, fluxo:int, reversa:bool) -> None:
@@ -113,7 +114,7 @@ class Grafo:
         for aresta in caminho:
             aresta.atualizar(gargalo_valor)
 
-    def ford_fulkerson(self, inicio: int, fim:int, reset: bool = False) -> int:
+    def ford_fulkerson(self, inicio: int, fim:int, escrita: str, reset: bool = False) -> int:
         if reset == True:
             self.reset()
         caminho = self.get_caminho(inicio, fim)
@@ -121,8 +122,9 @@ class Grafo:
             self.aumentar(caminho)
             caminho = self.get_caminho(inicio, fim)
         fluxo = self.get_fluxo(inicio)
+        tempo_leitura = self.alocacao(escrita)
         reset = True
-        return fluxo
+        return fluxo, tempo_leitura
 
     def get_fluxo(self, vertice: int) -> int:
         fluxo = 0
@@ -144,3 +146,19 @@ class Grafo:
             self.add_aresta(vertice1, vertice2, capacidade, 0, False)
             self.add_aresta(vertice2, vertice1, capacidade, 0, True)
         arquivo.close
+
+    def alocacao(self, escrita: str) -> int:
+        arquivo = open(escrita, 'w')
+        arquivo.writelines('aresta,vertice1,vertice2,fluxo\n')
+        grafo = self.grafo
+        count=0
+        inicio = time.time()
+        for vertice in grafo:
+            for aresta in grafo[vertice]:
+                if aresta.reversa == False:
+                    count += 1
+                    arquivo.writelines(f'{count},{aresta.vertice1},{aresta.vertice2},{aresta.fluxo} \n')
+        fim = time.time()
+        tempo=(fim - inicio)
+        arquivo.close()
+        return tempo
