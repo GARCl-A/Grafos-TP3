@@ -22,6 +22,10 @@ class Aresta:
 
         self.reversa = reversa
         self.capacidade_residual = 0
+        
+        self.original_pointer = None
+        self.reversa_pointer = None
+        
         if reversa:
             self.capacidade_residual = self.fluxo
         else:
@@ -33,6 +37,7 @@ class Aresta:
             self.capacidade_residual = self.fluxo
         else:
             self.capacidade_residual = self.capacidade - self.fluxo
+            self.reversa_pointer.atualizar(gargalo)
     
     def elegivel(self, delta: int) -> bool:
         if self.capacidade_residual >= delta:
@@ -53,8 +58,12 @@ class Grafo:
                 vertice1 = int(split[0])
                 vertice2 = int(split[1])
                 capacidade = int(split[2])
-                self.add_aresta(vertice1, vertice2, capacidade, 0, False)
-                self.add_aresta(vertice2, vertice1, capacidade, 0, True)
+                original = self.add_aresta(vertice1, vertice2, capacidade, 0, False)
+                reversa = self.add_aresta(vertice2, vertice1, capacidade, 0, True)
+                
+                original.reversa_pointer = reversa
+                reversa.original_pointer = original
+                
         if direcionado == False:
             for linha in arquivo:   #Criando grafo residual
                 split = linha.split()
@@ -69,6 +78,7 @@ class Grafo:
 
     def add_aresta(self, vertice1: int, vertice2: int, capacidade:int, fluxo:int, reversa:bool) -> None:
         self.grafo[vertice1].append(Aresta(vertice1, vertice2, capacidade, fluxo, reversa))
+        return self.grafo[vertice1][-1]
 
     def get_vizinhos(self, vertice: int):
         vizinhos = self.grafo[vertice]
